@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>AirConsole Screen - airconsole.com</title>
+  <style type="text/css">
+    body {
+      background: #FFFFFF;
+    }
+    canvas {
+      background: #CCCCCC;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress_container">
+    <canvas id="main_canvas" width="300" height="300"></canvas>
+  </div>
+
+  <p>
+    Drag the area on the controller
+  </p>
+
+  <script type="text/javascript" src="//www.airconsole.com/api/airconsole-1.6.0.js"></script>
+  <script type="text/javascript">
+    var airconsole = new AirConsole();
+    var canvas = document.getElementById('main_canvas');
+    var ctx = canvas.getContext('2d');
+    var last_tick_timestamp = 0;
+    var update_fn = null;
+    var WIDTH = canvas.width;
+    var HEIGHT = canvas.height;
+    var vector = {
+      start_x: WIDTH / 2,
+      start_y: HEIGHT / 2,
+      end_x: 200,
+      end_y: 200
+    };
+
+    airconsole.onReady = function() {
+
+    };
+
+    airconsole.onMessage = function(device_id, data) {
+      if (data.action === "move") {
+        var v = data.vector;
+        vector.end_x = vector.start_x + Math.cos(v.angle) * v.distance;
+        vector.end_y = vector.start_y + Math.sin(v.angle) * v.distance;
+      }
+      if (data.action === "up") {
+        vector.end_x = vector.start_x;
+        vector.end_y = vector.start_y;
+      }
+    };
+
+    // In modern browsers we can use the high resolution timer and  browsers
+    // in older fallback to using a Date object
+    function timestamp() {
+      return window.performance && window.performance.now ?     window.performance.now() : new Date().getTime();
+    };
+
+    var clear = function() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    };
+
+    var draw = function(ctx) {
+      ctx.beginPath();
+      ctx.moveTo(vector.start_x, vector.start_y);
+      ctx.lineTo(vector.end_x, vector.end_y);
+      ctx.stroke();
+    };
+
+    var update = function(dt) {
+
+    };
+
+    var loop = function() {
+      clear();
+      var now = timestamp();
+      var dt = Math.min(1, (now - last_tick_timestamp) / 1000);
+
+      draw(ctx);
+      update(dt);
+
+      requestAnimationFrame(loop);
+    };
+
+    var init = function() {
+      last_tick_timestamp = timestamp();
+      loop();
+    }();
+
+  </script>
+
+</body>
+</html>

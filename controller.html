@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+</head>
+<style type="text/css">
+      body {
+        background: #FFFFFF;
+       -ms-user-select: none;
+       -moz-user-select: none;
+       -webkit-user-select: none;
+       user-select: none;
+     }
+     .example-container {
+       position: relative;
+       background-color: #3b3b3b;
+       text-align: center;
+       font-family: sans-serif;
+       display: inline-block;
+       width: 100%;
+       height: 100%;
+       max-width: 620px;
+       max-height: 300px;
+     }
+     /* You need to explicitly position your areas */
+     #swipe-area-digital, #swipe-area-analog {
+      background: #333333;
+       position: absolute;
+       width: 100%;
+       height: 100%;
+       top: 0px;
+       left: 0;
+       max-width: 300px;
+       max-height: 300px;
+     }
+</style>
+<body>
+
+<div id="swipe-area-analog" class="button-300-300">
+
+</div>
+
+<script type="text/javascript" src="//www.airconsole.com/api/airconsole-1.6.0.js"></script>
+<script type="text/javascript" src="airconsole-rate-limiter.js"></script>
+<script type="text/javascript" src="swipe.js"></script>
+<script type="text/javascript">
+
+  var airconsole = new AirConsole({
+    orientation: 'landscape'
+  });
+  var rateLimiter = new RateLimiter(airconsole);
+
+  airconsole.onReady = function() {
+
+  };
+
+  // The first argument can be an html element or and element id. The second argument are options.
+  new SwipeAnalog("swipe-area-analog", {
+      // Gets called when the amount of pixels swiped has been exceeded
+      // Param is the direction vector
+      "onTrigger": function(direction_vector) {
+        //console.log(direction_vector);
+        rateLimiter.message(AirConsole.SCREEN, {
+          "action": "move",
+          vector: direction_vector
+        });
+      },
+      // Gets called when the SwipeAnalog is touched.
+      "touchstart": function() {},
+      "touchmove": function() {
+      },
+      // Gets called when the SwipeAnalog is released. If had_directions is false, it was just a tap.
+      "touchend": function(event, had_directions) {
+        rateLimiter.message(AirConsole.SCREEN, {
+          "action": "up"
+        });
+      },
+      // (Optional) Minimum distance (px) to swipe until triggering the onTrigger function
+      "min_swipe_distance": 30
+    });
+
+</script>
+
+</body>
+</html>
