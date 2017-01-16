@@ -56,6 +56,7 @@
 
   // The first argument can be an html element or and element id. The second argument are options.
   new SwipeAnalog("swipe-area-analog", {
+      is_slingshot: true,
       // Gets called when the amount of pixels swiped has been exceeded
       // Param is the direction vector
       "onTrigger": function(direction_vector) {

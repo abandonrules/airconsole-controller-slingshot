@@ -36,6 +36,7 @@
 var SwipeAnalog = function(el, opts) {
   opts = opts || {}
   this.min_swipe_distance = opts.min_swipe_distance || 30;
+  this.is_slingshot = opts.is_slingshot;
   this.is_touch_down = false;
   this.has_triggered_for_current_swipe = false;
   this.start_position = {
@@ -104,10 +105,10 @@ SwipeAnalog.prototype = {
   onTouchMove: function(e) {
     if (this.is_touch_down) {
       this.move_cb(e);
-      //if (this.has_triggered_for_current_swipe) return;
+      if (this.has_triggered_for_current_swipe && !this.is_slingshot) return;
       var swipe_vector = this.getSwipeVector(e);
       if (swipe_vector) {
-        //this.has_triggered_for_current_swipe = true;
+        this.has_triggered_for_current_swipe = true;
         this.trigger_cb(swipe_vector);
       }
     }
@@ -150,7 +151,7 @@ SwipeAnalog.prototype = {
 
     // Check if distance has been exceeded and calculate direction vector
     var distance = this.getDistanceBetweenTwoPoints(pos, vec);
-    //if (distance >= this.min_swipe_distance) {
+    if (distance >= this.min_swipe_distance || this.is_slingshot) {
 
       swipe_vector = this.getNormalizedVector({
         x: pos.x - vec.x,
@@ -164,7 +165,7 @@ SwipeAnalog.prototype = {
       swipe_vector.distance = distance;
       swipe_vector.angle = angle;
       swipe_vector.degree = Math.round(angle * 180 / Math.PI);
-    //}
+    }
     return swipe_vector;
   },
 
