@@ -12,6 +12,7 @@
  * @property {number|undefined} min_swipe_distance - amount of pixels
  *           which the user needs to move or tap the SwipeAnalog before triggering a
  *           direction. E.g: 20
+ * @property (Boolean) is_slingshot - If it should trigger with every on-move event.
  * @property {boolean} log - Debug output iff a callback is not set.
  */
 
@@ -24,6 +25,8 @@
   *        @property {Number} y - The y property
   *        @property {Number} angle - The angle in radian
   *        @property {Number} degree - The angle in degree
+  *        @property {Number} distance - The distance in px which was swiped
+  *        @property {Number} speed - px per seconds which was swiped
   */
 
 /**
@@ -36,13 +39,14 @@
 var SwipeAnalog = function(el, opts) {
   opts = opts || {}
   this.min_swipe_distance = opts.min_swipe_distance || 30;
-  this.is_slingshot = opts.is_slingshot;
+  this.is_slingshot = opts.is_slingshot || false;
   this.is_touch_down = false;
   this.has_triggered_for_current_swipe = false;
   this.start_position = {
     x: 0,
     y: 0
   };
+  this.start_move_ts = null;
 
   if (typeof el == "string") {
     el = document.getElementById(el);
@@ -92,6 +96,7 @@ SwipeAnalog.prototype = {
    */
   onTouchStart: function(e) {
     this.is_touch_down = true;
+    this.start_move_ts = new Date().getTime();
     this.setStartPosition(e);
     this.start_cb(e);
     e.preventDefault();
@@ -124,6 +129,7 @@ SwipeAnalog.prototype = {
     this.end_cb(e, this.has_triggered_for_current_swipe);
     this.has_triggered_for_current_swipe = false;
     this.container.className = this.container.className.replace(/ button\-active/g, "");
+    this.start_move_ts = null;
     e.preventDefault();
   },
 
@@ -165,7 +171,12 @@ SwipeAnalog.prototype = {
       swipe_vector.distance = distance;
       swipe_vector.angle = angle;
       swipe_vector.degree = Math.round(angle * 180 / Math.PI);
+      if (this.start_move_ts) {
+        var time_delta = (+new Date()) - this.start_move_ts;
+        swipe_vector.speed = Math.round(distance / (time_delta / 1000), 10);
+      }
     }
+    console.log(swipe_vector)
     return swipe_vector;
   },
 
